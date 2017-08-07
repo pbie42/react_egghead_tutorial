@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import logo from './logo.svg'
 import './App.css'
 import { TodoForm, TodoList } from './components/todo'
-import { addTodo, generateId, findById, toggleTodo, updateTodo } from './lib/todoHelpers'
+import { pipe, partial } from './lib/utils'
+import { addTodo, generateId, findById, toggleTodo, updateTodo, removeTodo } from './lib/todoHelpers'
 
 class App extends Component {
 
@@ -13,6 +14,18 @@ class App extends Component {
         { id: 3, name: 'Ship It!', isComplete: false}
       ],
       currentTodo: ''
+  }
+
+  handleRemove = (id, evt) => {
+    evt.preventDefault()
+    const updatedTodos = removeTodo(this.state.todos, id)
+    this.setState({ todos: updatedTodos })
+  }
+
+  handleToggle = (id) => {
+    const getUpdatedTodos = pipe(findById, toggleTodo, partial(updateTodo, this.state.todos))
+    const updatedTodos = getUpdatedTodos(id, this.state.todos)
+    this.setState({ todos: updatedTodos })
   }
 
   handleSubmit = (evt) => {
@@ -51,7 +64,7 @@ class App extends Component {
         <div className="Todo-App">
           { this.state.errorMessage && <span className="error">{ this.state.errorMessage }</span>}
           <TodoForm handleInputChange={ this.handleInputChange } currentTodo={ this.state.currentTodo } handleSubmit={ submitHandler }/>
-          <TodoList todos={ this.state.todos }/>
+          <TodoList handleToggle={ this.handleToggle } handleRemove={ this.handleRemove } todos={ this.state.todos }/>
         </div>
       </div>
     );
